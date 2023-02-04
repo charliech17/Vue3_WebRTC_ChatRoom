@@ -6,7 +6,7 @@
     <button @click="() => connFunction(state.inputConnectID)" :disabled="!state.inputConnectID">連接視訊</button>
   </div>
   <div>
-    <video id="streamVideo" autoplay muted></video>
+    <video id="streamVideo" autoplay muted playsinline></video>
   </div>
   <div>
     <textarea cols="30" rows="10" @input="handleTextareaInput" v-model="state.textAreaValue"></textarea>
