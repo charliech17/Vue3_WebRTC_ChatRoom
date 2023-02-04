@@ -44,7 +44,9 @@ peer.on("connection", (conn) => {
 
 peer.on("call", (call) => {
   console.log('call!!!',call)
-	const streamPromise = navigator.mediaDevices.getUserMedia(
+  // @ts-ignore
+  const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+	getUserMedia(
 		{ video: true, audio: true },
 	).then((stream) => {
 			call.answer(stream); // Answer the call with an A/V stream.
@@ -80,7 +82,12 @@ const connFunction = (remoteID: string) => {
     video: {  facingMode: "user", width: 1280, height: 720 }
   };
 
-  const mediaPromise: Promise<MediaStream> = navigator.mediaDevices.getUserMedia(constraints)
+  // @ts-ignore
+  const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  // @ts-ignore
+  const mediaPromise: Promise<MediaStream> = getUserMedia(constraints).catch((error)=> {
+      console.error("Failed to get local stream", error);
+  })
   mediaPromise.then((stream: MediaStream)=>{
     console.log('start Stream!!!')
     const call = peer.call(state.inputConnectID, stream);
@@ -92,8 +99,6 @@ const connFunction = (remoteID: string) => {
           video.play();
         };
     });
-  }).catch((error: Error)=> {
-      console.error("Failed to get local stream", error);
   })
 }
 
