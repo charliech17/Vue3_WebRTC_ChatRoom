@@ -45,10 +45,10 @@ peer.on("connection", (conn) => {
 peer.on("call", (call) => {
   console.log('call!!!',call)
   // @ts-ignore
-  const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia; 
 	getUserMedia(
 		{ video: true, audio: true },
-	).then((stream) => {
+    (stream: MediaStream) => {
 			call.answer(stream); // Answer the call with an A/V stream.
 			call.on("stream", (remoteStream) => {
         console.log(remoteStream)
@@ -57,13 +57,13 @@ peer.on("call", (call) => {
         video.onloadedmetadata = () => {
           video.play();
         };
-			});
-		}
-  ).catch((err) => {
-    console.error("Failed to get local stream", err);
-  })
-});
-
+			})
+    },
+    (err: Error) => {
+      console.error("Failed to get local stream", err);
+    }
+	)
+})
 
 // 2 始連接
 const connFunction = (remoteID: string) => {
@@ -83,23 +83,25 @@ const connFunction = (remoteID: string) => {
   };
 
   // @ts-ignore
-  const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  // @ts-ignore
-  const mediaPromise: Promise<MediaStream> = getUserMedia(constraints).catch((error)=> {
-      console.error("Failed to get local stream", error);
-  })
-  mediaPromise.then((stream: MediaStream)=>{
-    console.log('start Stream!!!')
-    const call = peer.call(state.inputConnectID, stream);
-    call.on("stream", (remoteStream) => {
-      // Show stream in some <video> element.
-        const video = document.querySelector('#streamVideo') as HTMLVideoElement
-        video.srcObject = remoteStream;
-        video.onloadedmetadata = () => {
-          video.play();
-        };
-    });
-  })
+  const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  getUserMedia(
+		{ video: true, audio: true },
+    (stream: MediaStream) => {
+			console.log('start Stream!!!')
+      const call = peer.call(state.inputConnectID, stream);
+      call.on("stream", (remoteStream) => {
+        // Show stream in some <video> element.
+          const video = document.querySelector('#streamVideo') as HTMLVideoElement
+          video.srcObject = remoteStream;
+          video.onloadedmetadata = () => {
+            video.play();
+          };
+      });
+    },
+    (err: Error) => {
+      console.error("Failed to get local stream", err);
+    }
+	)
 }
 
 let debounce: ReturnType<typeof setTimeout>
