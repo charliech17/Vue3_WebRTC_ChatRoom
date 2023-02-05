@@ -152,7 +152,7 @@ peer.on('close', function() {
 window.addEventListener('focus',resetPeer)
 function resetPeer() {
   nextTick(()=> {
-    console.log('peer.disconnected?',peer.disconnected)
+    console.log('peer.disconnected?',peer.disconnected,peer.id)
     if(peer.disconnected || !peer.id ) {
       reInitPeer(peerId.value)
       initEventListenr()
