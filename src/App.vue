@@ -145,10 +145,12 @@ function initEventListenr() {
   })
 
   peer.on('close', function() { 
-    state.isconnect = false
-    const video = document.querySelector('#streamVideo') as HTMLVideoElement
-    stopStreamedVideo(video)
+    stopStreaming()
  });
+
+ peer.on('disconnected', function() { 
+    stopStreaming()
+ })
 
  peer.on('error',(error)=> {
   countErrorTime++
@@ -158,6 +160,12 @@ function initEventListenr() {
     alert('錯誤發生：'+error)
   }
  })
+}
+
+function stopStreaming() {
+    state.isconnect = false
+    const video = document.querySelector('#streamVideo') as HTMLVideoElement
+    stopStreamedVideo(video)
 }
 
 function reConnectServer() {
