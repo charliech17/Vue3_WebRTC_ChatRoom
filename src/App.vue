@@ -23,10 +23,91 @@ const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string} = 
   textAreaValue: '',
 })
 
-const peer = new Peer();
+// let peer = new Peer();
+let peer = new Peer()
 const peerId = ref('')
+initEventListen()
 
-// 1 接收連接
+
+
+// 2 始連接
+const connFunction = (remoteID: string) => {
+  console.log(state.inputConnectID,peer)
+  if(!peer.connect(remoteID)) {
+    reInitPeer()
+    initEventListen()
+
+  }
+  
+  let conn = peer.connect(remoteID)
+  conn.on("open", () => {
+    state.isconnect = true
+    conn.send("hi!");
+  });
+  conn.on("data", (data) => {
+      // Will print 'hi!'
+      console.log(data);
+  });
+
+  const constraints = {
+    audio: true,
+    video: {  facingMode: "user", width: 1280, height: 720 }
+  };
+
+  // @ts-ignore
+  const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  getUserMedia(
+		constraints,
+    (stream: MediaStream) => {
+			console.log('start Stream!!!')
+      const call = peer.call(state.inputConnectID, stream);
+      call.on("stream", (remoteStream) => {
+        // Show stream in some <video> element.
+          const video = document.querySelector('#streamVideo') as HTMLVideoElement
+          video.srcObject = remoteStream;
+          video.onloadedmetadata = () => {
+            video.play();
+          };
+      });
+    },
+    (err: Error) => {
+      console.error("Failed to get local stream", err);
+    }
+	)
+}
+
+let debounce: ReturnType<typeof setTimeout>
+const handleTextareaInput = () => {
+  state.isconnect = true
+  clearTimeout(debounce)
+  debounce = setTimeout(()=> {
+    const conn = peer.connect(state.inputConnectID);
+    console.log(peer)
+    conn.on("open", () => {
+      console.log('sendValue!!!',state.textAreaValue)
+      conn.send(state.textAreaValue);
+    });
+  },500)
+}
+
+function stopStreamedVideo(videoElem: HTMLVideoElement) {
+  const stream = videoElem.srcObject;
+  //@ts-ignore
+  const tracks = stream.getTracks();
+  //@ts-ignore
+  tracks.forEach((track) => {
+    track.stop();
+  });
+
+  videoElem.srcObject = null;
+}
+
+function reInitPeer() {
+  peer = new Peer()
+}
+
+function initEventListen() {
+  // 1 接收連接
 peer.on('open',(myId)=> {
     peerId.value = myId
 })
@@ -71,72 +152,6 @@ peer.on('close', function() {
   const video = document.querySelector('#streamVideo') as HTMLVideoElement
   stopStreamedVideo(video)
  });
-
-
-// 2 始連接
-const connFunction = (remoteID: string) => {
-  state.isconnect = true
-  const conn = peer.connect(remoteID);
-  console.log(state.inputConnectID,peer)
-  conn.on("open", () => {
-    conn.send("hi!");
-  });
-  conn.on("data", (data) => {
-      // Will print 'hi!'
-      console.log(data);
-  });
-
-  const constraints = {
-    audio: true,
-    video: {  facingMode: "user", width: 1280, height: 720 }
-  };
-
-  // @ts-ignore
-  const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  getUserMedia(
-		{ video: true, audio: true },
-    (stream: MediaStream) => {
-			console.log('start Stream!!!')
-      const call = peer.call(state.inputConnectID, stream);
-      call.on("stream", (remoteStream) => {
-        // Show stream in some <video> element.
-          const video = document.querySelector('#streamVideo') as HTMLVideoElement
-          video.srcObject = remoteStream;
-          video.onloadedmetadata = () => {
-            video.play();
-          };
-      });
-    },
-    (err: Error) => {
-      console.error("Failed to get local stream", err);
-    }
-	)
-}
-
-let debounce: ReturnType<typeof setTimeout>
-const handleTextareaInput = () => {
-  state.isconnect = true
-  clearTimeout(debounce)
-  debounce = setTimeout(()=> {
-    const conn = peer.connect(state.inputConnectID);
-    console.log(peer)
-    conn.on("open", () => {
-      console.log('sendValue!!!',state.textAreaValue)
-      conn.send(state.textAreaValue);
-    });
-  },500)
-}
-
-function stopStreamedVideo(videoElem: HTMLVideoElement) {
-  const stream = videoElem.srcObject;
-  //@ts-ignore
-  const tracks = stream.getTracks();
-  //@ts-ignore
-  tracks.forEach((track) => {
-    track.stop();
-  });
-
-  videoElem.srcObject = null;
 }
 
 </script>
