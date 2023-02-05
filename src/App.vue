@@ -34,6 +34,7 @@ peer.on('open',(myId)=> {
 peer.on("connection", (conn) => {
     conn.on("data", (data) => {
       console.log('data!!!',data)
+      state.isconnect = true
       // @ts-ignore
       state.textAreaValue = data
     });
@@ -43,7 +44,7 @@ peer.on("connection", (conn) => {
 });
 
 peer.on("call", (call) => {
-  console.log('call!!!',call)
+  state.isconnect = true
   // @ts-ignore
   const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia; 
 	getUserMedia(
@@ -65,8 +66,16 @@ peer.on("call", (call) => {
 	)
 })
 
+peer.on('close', function() { 
+  state.isconnect = false
+  const video = document.querySelector('#streamVideo') as HTMLVideoElement
+  stopStreamedVideo(video)
+ });
+
+
 // 2 始連接
 const connFunction = (remoteID: string) => {
+  state.isconnect = true
   const conn = peer.connect(remoteID);
   console.log(state.inputConnectID,peer)
   conn.on("open", () => {
@@ -106,6 +115,7 @@ const connFunction = (remoteID: string) => {
 
 let debounce: ReturnType<typeof setTimeout>
 const handleTextareaInput = () => {
+  state.isconnect = true
   clearTimeout(debounce)
   debounce = setTimeout(()=> {
     const conn = peer.connect(state.inputConnectID);
@@ -115,6 +125,18 @@ const handleTextareaInput = () => {
       conn.send(state.textAreaValue);
     });
   },500)
+}
+
+function stopStreamedVideo(videoElem: HTMLVideoElement) {
+  const stream = videoElem.srcObject;
+  //@ts-ignore
+  const tracks = stream.getTracks();
+  //@ts-ignore
+  tracks.forEach((track) => {
+    track.stop();
+  });
+
+  videoElem.srcObject = null;
 }
 
 </script>
