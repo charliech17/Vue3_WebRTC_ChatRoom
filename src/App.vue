@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { Peer } from "peerjs";
-import { reactive,ref, VideoHTMLAttributes } from 'vue'
+import { nextTick, reactive,ref, onUnmounted} from 'vue'
 
 const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string} = reactive({
   isconnect: false,
@@ -26,20 +26,14 @@ const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string} = 
 // let peer = new Peer();
 let peer = new Peer()
 const peerId = ref('')
-initEventListen()
+initEventListenr()
 
 
 
 // 2 始連接
 const connFunction = (remoteID: string) => {
   console.log(state.inputConnectID,peer)
-  if(!peer.connect(remoteID)) {
-    reInitPeer()
-    initEventListen()
-
-  }
-  
-  let conn = peer.connect(remoteID)
+  const conn = peer.connect(remoteID)
   conn.on("open", () => {
     state.isconnect = true
     conn.send("hi!");
@@ -102,11 +96,11 @@ function stopStreamedVideo(videoElem: HTMLVideoElement) {
   videoElem.srcObject = null;
 }
 
-function reInitPeer() {
-  peer = new Peer()
+function reInitPeer(initId?: string) {
+  peer = initId ? new Peer(initId) : new Peer()
 }
 
-function initEventListen() {
+function initEventListenr() {
   // 1 接收連接
 peer.on('open',(myId)=> {
     peerId.value = myId
@@ -154,6 +148,20 @@ peer.on('close', function() {
  });
 }
 
+
+window.addEventListener('focus',resetPeer)
+function resetPeer() {
+  nextTick(()=> {
+    console.log('peer.disconnected?',peer.disconnected)
+    if(peer.disconnected ) {
+      reInitPeer(peerId.value)
+      initEventListenr()
+    }
+  })
+}
+onUnmounted(()=> {
+  window.removeEventListener('focus',resetPeer)
+})
 </script>
 
 <style>
