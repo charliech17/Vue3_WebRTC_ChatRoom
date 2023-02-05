@@ -5,7 +5,7 @@
   <div>
     <button @click="() => connFunction(state.inputConnectID)" :disabled="!state.inputConnectID">連接視訊</button>
   </div>
-  <div>
+  <div class="videoSection">
     <video id="streamVideo" autoplay muted playsinline></video>
   </div>
   <div>
@@ -67,8 +67,8 @@ peer.on("call", (call) => {
 
 // 2 始連接
 const connFunction = (remoteID: string) => {
-  console.log(state.inputConnectID)
   const conn = peer.connect(remoteID);
+  console.log(state.inputConnectID,peer)
   conn.on("open", () => {
     conn.send("hi!");
   });
@@ -109,6 +109,7 @@ const handleTextareaInput = () => {
   clearTimeout(debounce)
   debounce = setTimeout(()=> {
     const conn = peer.connect(state.inputConnectID);
+    console.log(peer)
     conn.on("open", () => {
       console.log('sendValue!!!',state.textAreaValue)
       conn.send(state.textAreaValue);
@@ -117,6 +118,13 @@ const handleTextareaInput = () => {
 }
 
 </script>
+
+<style>
+#app {
+  padding: 16px;
+}
+
+</style>
 
 <style scoped>
 .logo {
@@ -130,5 +138,14 @@ const handleTextareaInput = () => {
 }
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
+}
+
+.videoSection {
+  width: calc(100vw - 32px);
+  max-width: 500px;
+}
+
+.videoSection #streamVideo {
+  width: 100%;
 }
 </style>
