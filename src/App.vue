@@ -122,6 +122,7 @@ const handleTextareaInput = () => {
 <style>
 #app {
   padding: 16px;
+  overflow-x: hidden;
 }
 
 </style>
