@@ -4,6 +4,7 @@
   <input type="text" v-model="state.inputConnectID">
   <div>
     <button @click="() => connFunction(state.inputConnectID)" :disabled="!state.inputConnectID">連接視訊</button>
+    <button @click="closeMuted" :disabled="state.isMutedDisable">{{videoMuted ? "開啟聲音":"轉成靜音"}}</button>
   </div>
   <div class="videoSection">
     <video id="streamVideo" autoplay muted playsinline></video>
@@ -11,18 +12,18 @@
   <div>
     <textarea cols="30" rows="10" @input="handleTextareaInput" v-model="state.textAreaValue"></textarea>
   </div>
-
 </template>
 
 <script setup lang="ts">
 import { Peer } from "peerjs";
 import { nextTick, reactive,ref, onUnmounted} from 'vue'
 
-const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string,isError: boolean} = reactive({
+const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string,isError: boolean,isMutedDisable: boolean} = reactive({
   isconnect: false,
   inputConnectID: '',
   textAreaValue: '',
   isError: false,
+  isMutedDisable: true,
 })
 
 // let peer = new Peer();
@@ -63,10 +64,12 @@ const connFunction = (remoteID: string) => {
           video.srcObject = remoteStream;
           video.onloadedmetadata = () => {
             video.play();
+            state.isMutedDisable = false
           };
       });
     },
     (err: Error) => {
+      state.isMutedDisable = true
       console.error("Failed to get local stream", err);
     }
 	)
@@ -135,10 +138,12 @@ function initEventListenr() {
           video.srcObject = remoteStream;
           video.onloadedmetadata = () => {
             video.play();
+            state.isMutedDisable = false
           };
         })
       },
       (err: Error) => {
+        state.isMutedDisable = true
         console.error("Failed to get local stream", err);
       }
     )
@@ -153,6 +158,7 @@ function initEventListenr() {
  })
 
  peer.on('error',(error)=> {
+  state.isMutedDisable = true
   countErrorTime++
   reConnectServer()
   if(countErrorTime > 4) {
@@ -163,6 +169,7 @@ function initEventListenr() {
 }
 
 function stopStreaming() {
+    state.isMutedDisable = true
     state.isconnect = false
     const video = document.querySelector('#streamVideo') as HTMLVideoElement
     stopStreamedVideo(video)
@@ -173,7 +180,12 @@ function reConnectServer() {
   initEventListenr()
 }
 
-
+let videoMuted = ref(true)
+const closeMuted = () => {
+  const video = document.querySelector('#streamVideo') as HTMLVideoElement
+  video.muted = !video.muted
+  videoMuted.value  = video.muted
+}
 // window.addEventListener('focus',resetPeer)
 // function resetPeer() {
 //   nextTick(()=> {
