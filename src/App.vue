@@ -4,10 +4,19 @@
   <input type="text" v-model="state.inputConnectID">
   <div>
     <button @click="() => connFunction(state.inputConnectID)" :disabled="!state.inputConnectID">連接視訊</button>
-    <button @click="closeMuted" :disabled="state.isMutedDisable">{{videoMuted ? "開啟聲音":"轉成靜音"}}</button>
+    <button @click="closeMuted" :disabled="state.isMutedDisable">{{videoMuted ? "連接音訊":"斷開音訊"}}</button>
+    <button @click="() => toggleOutput('video')">{{state.isShowCamera ? '視訊關閉': '視訊開啟'}}</button>
+    <button @click="() => toggleOutput('audio')">{{state.isShowSound ? '聲音關閉': '聲音開啟'}}</button>
   </div>
   <div class="videoSection">
-    <video id="streamVideo" autoplay muted playsinline></video>
+    <div>
+      <h3>別人的影像</h3>
+      <video id="otherVideo" autoplay muted playsinline></video>
+    </div>
+    <div>
+      <h3>您的影像</h3>
+      <video id="myVideo" autoplay muted playsinline></video>
+    </div>
   </div>
   <div>
     <textarea cols="30" rows="10" @input="handleTextareaInput" v-model="state.textAreaValue"></textarea>
@@ -16,14 +25,17 @@
 
 <script setup lang="ts">
 import { Peer } from "peerjs";
-import { nextTick, reactive,ref, onUnmounted} from 'vue'
+import { reactive,ref} from 'vue'
 
-const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string,isError: boolean,isMutedDisable: boolean} = reactive({
+const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string,isError: boolean,isMutedDisable: boolean,myMediaStream: MediaStream | null, isShowCamera: boolean, isShowSound: boolean} = reactive({
   isconnect: false,
   inputConnectID: '',
   textAreaValue: '',
   isError: false,
   isMutedDisable: true,
+  myMediaStream: null,
+  isShowCamera: false,
+  isShowSound: false
 })
 
 // let peer = new Peer();
@@ -48,24 +60,20 @@ const connFunction = (remoteID: string) => {
 
   const constraints = {
     audio: true,
-    video: {  facingMode: "user", width: 1280, height: 720 }
+    video: {  facingMode: "user" }
   };
 
   // @ts-ignore
   const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
   getUserMedia(
 		constraints,
-    (stream: MediaStream) => {
+    (localstream: MediaStream) => {
 			console.log('start Stream!!!')
-      const call = peer.call(state.inputConnectID, stream);
+      setVideoPlay('#myVideo',localstream)
+      const call = peer.call(state.inputConnectID, localstream);
       call.on("stream", (remoteStream) => {
         // Show stream in some <video> element.
-          const video = document.querySelector('#streamVideo') as HTMLVideoElement
-          video.srcObject = remoteStream;
-          video.onloadedmetadata = () => {
-            video.play();
-            state.isMutedDisable = false
-          };
+        setVideoPlay('#otherVideo',remoteStream)
       });
     },
     (err: Error) => {
@@ -130,16 +138,12 @@ function initEventListenr() {
     const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia; 
     getUserMedia(
       { video: true, audio: true },
-      (stream: MediaStream) => {
-        call.answer(stream); // Answer the call with an A/V stream.
+      (localStream: MediaStream) => {
+        setVideoPlay('#myVideo',localStream)
+        call.answer(localStream); // Answer the call with an A/V stream.
         call.on("stream", (remoteStream) => {
           console.log(remoteStream)
-          const video = document.querySelector("#streamVideo") as HTMLVideoElement
-          video.srcObject = remoteStream;
-          video.onloadedmetadata = () => {
-            video.play();
-            state.isMutedDisable = false
-          };
+          setVideoPlay('#otherVideo',remoteStream)
         })
       },
       (err: Error) => {
@@ -171,8 +175,8 @@ function initEventListenr() {
 function stopStreaming() {
     state.isMutedDisable = true
     state.isconnect = false
-    const video = document.querySelector('#streamVideo') as HTMLVideoElement
-    stopStreamedVideo(video)
+    const otherVideo = document.querySelector('#otherVideo') as HTMLVideoElement
+    stopStreamedVideo(otherVideo)
 }
 
 function reConnectServer() {
@@ -182,23 +186,41 @@ function reConnectServer() {
 
 let videoMuted = ref(true)
 const closeMuted = () => {
-  const video = document.querySelector('#streamVideo') as HTMLVideoElement
-  video.muted = !video.muted
-  videoMuted.value  = video.muted
+  const otherVideo = document.querySelector('#otherVideo') as HTMLVideoElement
+  otherVideo.muted = !otherVideo.muted
+  videoMuted.value  = otherVideo.muted
 }
-// window.addEventListener('focus',resetPeer)
-// function resetPeer() {
-//   nextTick(()=> {
-//     console.log('peer.disconnected?',peer.disconnected,peer.id)
-//     if(peer.disconnected || !peer.id ) {
-//       reInitPeer(peerId.value)
-//       initEventListenr()
-//     }
-//   })
-// }
-// onUnmounted(()=> {
-//   window.removeEventListener('focus',resetPeer)
-// })
+
+const setVideoPlay = (id: string,streamData: MediaStream) => {
+  const video = document.querySelector(id) as HTMLVideoElement
+  video.srcObject = streamData;
+  video.onloadedmetadata = () => {
+    video.play();
+    if(id === "#myVideo") {
+      state.myMediaStream = streamData
+    } else if(id === '#otherVideo') {
+      state.isMutedDisable = false
+    }
+  };
+}
+
+const toggleOutput = (inputType: 'video' | 'audio') => {
+  if(!state.myMediaStream) return 
+  const myStream = state.myMediaStream
+  const videoTrack = myStream.getTracks().find(track => track.kind === inputType)
+  console.log('vdTrack',videoTrack,myStream)
+  
+  if(videoTrack?.enabled) {
+    videoTrack.enabled = false
+    console.log(videoTrack,videoTrack.enabled)
+    inputType === 'video' ? state.isShowCamera = false : state.isShowSound = false
+  } else {
+    if(!videoTrack) return
+    videoTrack.enabled = true
+    state.isShowCamera = true
+    inputType === 'video' ? state.isShowCamera = false : state.isShowSound = false
+  }
+}
 </script>
 
 <style>
@@ -224,11 +246,17 @@ const closeMuted = () => {
 }
 
 .videoSection {
-  width: calc(100vw - 32px);
-  max-width: 500px;
+  display: flex;
+  width: calc(100%);
+  max-width: 1024px;
+}
+.videoSection div{
+  flex: 1;
 }
 
-.videoSection #streamVideo {
-  width: 100%;
+@media (min-width: 768px) {
+  .videoSection {
+    max-width: none;
+  }
 }
 </style>
