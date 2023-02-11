@@ -253,7 +253,6 @@ const toggleOutput = (inputType: 'video' | 'audio') => {
   } else {
     if(!videoTrack) return
     videoTrack.enabled = true
-    state.isShowCamera = true
     inputType === 'video' ? state.isShowCamera = true : state.isShowSound = true
   }
 }
