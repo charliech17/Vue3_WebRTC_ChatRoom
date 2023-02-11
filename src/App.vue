@@ -47,11 +47,11 @@
   <div class="videoSection">
     <div>
       <h3>別人的影像</h3>
-      <video id="otherVideo" autoplay muted playsinline></video>
+      <video poster="../assets/picture/posterImage.jpg" id="otherVideo" autoplay muted playsinline></video>
     </div>
     <div>
       <h3>您的影像</h3>
-      <video id="myVideo" autoplay muted playsinline></video>
+      <video poster="../assets/picture/posterImage.jpg" id="myVideo" autoplay muted playsinline></video>
     </div>
   </div>
   <div class="mTop-8">
@@ -272,7 +272,7 @@ function getImageUrl(imageName: string) {
 
 </style>
 
-<style scoped>
+<style lang="scss" scoped>
 .mTop-8 {
   margin-top: 16px;
 }
@@ -292,19 +292,18 @@ function getImageUrl(imageName: string) {
 .videoSection {
   display: flex;
   flex-wrap: wrap;
-}
-.videoSection div{
-  flex: 1;
-  width: calc(100%-32px);
-}
-
-.videoSection div video {
-  width: 100%;
-}
-
-@media (min-width: 768px) {
-  .videoSection {
+  @media (min-width: 768px) {
     max-width: none;
+  }
+  
+  div{
+    flex: 1;
+    width: calc(100% - 32px);
+
+    video {
+      width: 100%;
+      background-color: wheat;
+    }
   }
 }
 </style>
