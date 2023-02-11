@@ -1,12 +1,48 @@
 <template>
-  <div>{{ state.isconnect ? '已連接' : '未連接' }}</div>
+  <div>
+    <img  :src="state.isconnect ? getImageUrl('connect.png')
+                                : getImageUrl('disconnect.png')" 
+              style="height: 15px; display: inline; margin-right: 4px;"
+    />
+    {{ state.isconnect ? '已連接' : '未連接' }}
+  </div>
   <p>你的連接ID: {{ peerId }}</p>
   <input type="text" v-model="state.inputConnectID">
   <div>
-    <button @click="() => connFunction(state.inputConnectID)" :disabled="!state.inputConnectID">連接視訊</button>
-    <button @click="closeMuted" :disabled="state.isMutedDisable">{{videoMuted ? "連接音訊":"斷開音訊"}}</button>
-    <button @click="() => toggleOutput('video')">{{state.isShowCamera ? '視訊關閉': '視訊開啟'}}</button>
-    <button @click="() => toggleOutput('audio')">{{state.isShowSound ? '聲音關閉': '聲音開啟'}}</button>
+    <!-- ***按鈕區塊一*** -->
+    <div class="mTop-8">
+      <!-- **連接按鈕** -->
+      <button @click="() => connFunction(state.inputConnectID)" :disabled="!state.inputConnectID">
+        <span>連接視訊</span>
+      </button>
+       <!-- **音訊開關按鈕** -->
+      <button @click="closeMuted" :disabled="!state.isconnect">
+        <img  :src="videoMuted  ? getImageUrl('volumeOff.png')
+                                : getImageUrl('volumeOn.png')" 
+              style="height: 15px; display: inline; margin-right: 4px;"
+        />
+        {{videoMuted ? "連接音訊":"斷開音訊"}}
+      </button>
+    </div>
+    <!-- ***按鈕區塊二*** -->
+    <div class="mTop-8">
+      <!-- **視訊開關按鈕** -->
+      <button @click="() => toggleOutput('video')" :disabled="!state.isconnect">
+        <img  :src="state.isShowCamera  ? getImageUrl('showVideo.png')
+                                        : getImageUrl('noVideo.png')" 
+              style="height: 15px; display: inline; margin-right: 4px;"
+        />
+        {{state.isShowCamera ? '視訊關閉': '視訊開啟'}}
+      </button>
+      <!-- **麥克風開關按鈕** -->
+      <button @click="() => toggleOutput('audio')" :disabled="!state.isconnect">
+        <img :src="state.isShowSound  ? getImageUrl('unmute.png') 
+                                      : getImageUrl('mute.png')" 
+              style="height: 15px;display: inline;margin-right: 4px;"
+        />
+        {{state.isShowSound ? '麥克風關': '麥克風開'}}
+      </button>
+    </div>
   </div>
   <div class="videoSection">
     <div>
@@ -18,7 +54,7 @@
       <video id="myVideo" autoplay muted playsinline></video>
     </div>
   </div>
-  <div>
+  <div class="mTop-8">
     <textarea cols="30" rows="10" @input="handleTextareaInput" v-model="state.textAreaValue"></textarea>
   </div>
 </template>
@@ -34,8 +70,8 @@ const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string,isE
   isError: false,
   isMutedDisable: true,
   myMediaStream: null,
-  isShowCamera: false,
-  isShowSound: false
+  isShowCamera: true,
+  isShowSound: true
 })
 
 // let peer = new Peer();
@@ -218,9 +254,15 @@ const toggleOutput = (inputType: 'video' | 'audio') => {
     if(!videoTrack) return
     videoTrack.enabled = true
     state.isShowCamera = true
-    inputType === 'video' ? state.isShowCamera = false : state.isShowSound = false
+    inputType === 'video' ? state.isShowCamera = true : state.isShowSound = true
   }
 }
+
+
+function getImageUrl(imageName: string) {
+  return new URL(`../assets/image/${imageName}`, import.meta.url).href
+}
+
 </script>
 
 <style>
@@ -232,6 +274,9 @@ const toggleOutput = (inputType: 'video' | 'audio') => {
 </style>
 
 <style scoped>
+.mTop-8 {
+  margin-top: 16px;
+}
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -247,11 +292,15 @@ const toggleOutput = (inputType: 'video' | 'audio') => {
 
 .videoSection {
   display: flex;
-  width: calc(100%);
-  max-width: 1024px;
+  flex-wrap: wrap;
 }
 .videoSection div{
   flex: 1;
+  width: calc(100%-32px);
+}
+
+.videoSection div video {
+  width: 100%;
 }
 
 @media (min-width: 768px) {
