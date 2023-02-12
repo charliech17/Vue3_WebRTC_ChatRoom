@@ -292,13 +292,11 @@ function getImageUrl(imageName: string) {
 .videoSection {
   display: flex;
   flex-wrap: wrap;
-  @media (min-width: 768px) {
-    max-width: none;
-  }
+  width: 100%;
+  gap: 8px;
   
   div{
     flex: 1;
-    width: calc(100% - 32px);
 
     video {
       width: 100%;
