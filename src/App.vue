@@ -300,7 +300,6 @@ function getImageUrl(imageName: string) {
 
     video {
       width: 100%;
-      background-color: wheat;
     }
   }
 }
