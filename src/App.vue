@@ -135,6 +135,7 @@ const handleTextareaInput = () => {
 
 function stopStreamedVideo(videoElem: HTMLVideoElement) {
   const stream = videoElem.srcObject;
+  if(!stream) return
   //@ts-ignore
   const tracks = stream.getTracks();
   //@ts-ignore
@@ -176,10 +177,10 @@ function initEventListenr() {
       { video: true, audio: true },
       (localStream: MediaStream) => {
         setVideoPlay('#myVideo',localStream)
-        call.answer(localStream); // Answer the call with an A/V stream.
         call.on("stream", (remoteStream) => {
           console.log(remoteStream)
           setVideoPlay('#otherVideo',remoteStream)
+          call.answer(localStream); // Answer the call with an A/V stream.
         })
       },
       (err: Error) => {
@@ -198,11 +199,14 @@ function initEventListenr() {
  })
 
  peer.on('error',(error)=> {
+  console.log(peer,error)
   state.isMutedDisable = true
   countErrorTime++
   reConnectServer()
   if(countErrorTime > 4) {
     countErrorTime = 0
+    const myVideo = document.querySelector('#myVideo') as HTMLVideoElement
+    stopStreamedVideo(myVideo)
     alert('錯誤發生：'+error)
   }
  })
