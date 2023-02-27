@@ -199,7 +199,7 @@ function initEventListenr() {
  })
 
  peer.on('error',(error)=> {
-  console.log(peer,error)
+  console.log(peer,error,error.name,error.toString())
   state.isMutedDisable = true
   countErrorTime++
   reConnectServer()
