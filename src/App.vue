@@ -177,10 +177,10 @@ function initEventListenr() {
       { video: true, audio: true },
       (localStream: MediaStream) => {
         setVideoPlay('#myVideo',localStream)
+        call.answer(localStream); // Answer the call with an A/V stream.
         call.on("stream", (remoteStream) => {
           console.log(remoteStream)
           setVideoPlay('#otherVideo',remoteStream)
-          call.answer(localStream); // Answer the call with an A/V stream.
         })
       },
       (err: Error) => {
