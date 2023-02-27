@@ -199,10 +199,14 @@ function initEventListenr() {
  })
 
  peer.on('error',(error)=> {
-  console.log(peer,error,error.name,error.toString())
+  // console.log(peer,error,error.name,error.toString())
   state.isMutedDisable = true
   countErrorTime++
-  reConnectServer()
+  if(error.toString().includes('Lost connection to server')) {
+    console.log('error Lost connection to server!!!')
+    reConnectServer()
+  }
+
   if(countErrorTime > 4) {
     countErrorTime = 0
     const myVideo = document.querySelector('#myVideo') as HTMLVideoElement
