@@ -115,6 +115,7 @@ button:focus-visible {
 .status-bg{
   background-color: rgb(49, 105, 154);
   width: calc(100%);
+  border-radius: 8px;
 }
 
 .ipt_style{
@@ -125,6 +126,8 @@ button:focus-visible {
 .main_bg {
   background-color: rgb(127, 111, 89);
   padding: 16px;
+  margin-top: 16px;
+  border-radius: 8px;
 }
 
 
