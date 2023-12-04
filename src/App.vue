@@ -75,7 +75,16 @@
 import { Peer } from "peerjs";
 import { reactive,ref} from 'vue'
 
-const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string,isError: boolean,isMutedDisable: boolean,myMediaStream: MediaStream | null, isShowCamera: boolean, isShowSound: boolean} = ref({
+const state:{
+  isconnect: boolean,
+  inputConnectID: string,
+  textAreaValue: string,
+  isError: boolean,
+  isMutedDisable: boolean,
+  myMediaStream: MediaStream | null, 
+  isShowCamera: boolean, 
+  isShowSound: boolean
+} = reactive({
   isconnect: false,
   inputConnectID: '',
   textAreaValue: '',
