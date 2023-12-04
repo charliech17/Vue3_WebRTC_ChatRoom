@@ -119,7 +119,7 @@ button:focus-visible {
 
 .ipt_style{
   height: 28px;
-  width: 250px;
+  width: 150px;
 }
 
 .main_bg {
@@ -146,5 +146,9 @@ button:focus-visible {
     width: fit-content;
     margin-right: auto;
     margin-left: auto;
+  }
+  .ipt_style{
+    height: 28px;
+    width: 250px;
   }
 }

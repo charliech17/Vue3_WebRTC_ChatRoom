@@ -17,7 +17,7 @@
     </div>
   </div>
   <div class="d-flex mt-20 justify-content-center align-items-center">
-    <h2 class="mr-8">輸入連接碼</h2>
+    <h4 class="mr-8">輸入連接碼</h4>
     <input 
       class="ipt_style mr-8" 
       type="text" 
@@ -25,10 +25,11 @@
       v-model="state.inputConnectID"
     >
     <button @click="() => connFunction(state.inputConnectID)" :disabled="!state.inputConnectID">
-      <span>連接視訊</span>
+      <span>連接</span>
     </button>
   </div>
   <main class="main_bg">
+    <h2>視訊介面</h2>
     <div class="control_part mTop-8">
         <!-- **音訊開關按鈕** -->
       <button @click="closeMuted" :disabled="!state.isconnect">
