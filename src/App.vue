@@ -1,21 +1,36 @@
 <template>
-  <div>
-    <img  :src="state.isconnect ? getImageUrl('connect.png')
-                                : getImageUrl('disconnect.png')" 
-              style="height: 15px; display: inline; margin-right: 4px;"
-    />
-    {{ state.isconnect ? '已連接' : '未連接' }}
+  <h1>試用ChatApp</h1>
+  <div class="status-bg mx-auto">
+    <div class="d-flex align-items-center">
+      <h2 class="mr-8 width-180px flex-shrink-0 txt-align pl-8">你的連線狀態:</h2>
+      <div class="flex-1">
+        <img  :src="state.isconnect ? getImageUrl('connect.png')
+                                    : getImageUrl('disconnect.png')" 
+                  style="height: 15px; display: inline; margin-right: 4px;"
+        />
+        <span>{{ state.isconnect ? '已連接' : '未連接' }}</span>
+      </div>
+    </div>
+    <div class="d-flex align-items-center">
+      <h2 class="mr-8 width-180px flex-shrink-0 txt-align pl-8">你的連接碼:</h2>
+      <p class="flex-1"> {{ peerId }}</p>
+    </div>
   </div>
-  <p>你的連接ID: {{ peerId }}</p>
-  <input type="text" v-model="state.inputConnectID">
-  <div>
-    <!-- ***按鈕區塊一*** -->
-    <div class="mTop-8">
-      <!-- **連接按鈕** -->
-      <button @click="() => connFunction(state.inputConnectID)" :disabled="!state.inputConnectID">
-        <span>連接視訊</span>
-      </button>
-       <!-- **音訊開關按鈕** -->
+  <div class="d-flex mt-20 justify-content-center align-items-center">
+    <h2 class="mr-8">輸入連接碼</h2>
+    <input 
+      class="ipt_style mr-8" 
+      type="text" 
+      placeholder="輸入別人的連結碼，或提供連接碼給別人"
+      v-model="state.inputConnectID"
+    >
+    <button @click="() => connFunction(state.inputConnectID)" :disabled="!state.inputConnectID">
+      <span>連接視訊</span>
+    </button>
+  </div>
+  <main class="main_bg">
+    <div class="control_part mTop-8">
+        <!-- **音訊開關按鈕** -->
       <button @click="closeMuted" :disabled="!state.isconnect">
         <img  :src="videoMuted  ? getImageUrl('volumeOff.png')
                                 : getImageUrl('volumeOn.png')" 
@@ -23,10 +38,6 @@
         />
         {{videoMuted ? "連接音訊":"斷開音訊"}}
       </button>
-    </div>
-    <!-- ***按鈕區塊二*** -->
-    <div class="mTop-8">
-      <!-- **視訊開關按鈕** -->
       <button @click="() => toggleOutput('video')" :disabled="!state.isconnect">
         <img  :src="state.isShowCamera  ? getImageUrl('showVideo.png')
                                         : getImageUrl('noVideo.png')" 
@@ -43,18 +54,19 @@
         {{state.isShowSound ? '麥克風關': '麥克風開'}}
       </button>
     </div>
-  </div>
-  <div class="videoSection">
-    <div>
-      <h3>別人的影像</h3>
-      <video poster="../assets/picture/posterImage.jpg" id="otherVideo" autoplay muted playsinline></video>
+    <div class="videoSection">
+      <div>
+        <h3>別人的影像</h3>
+        <video poster="../assets/picture/posterImage.jpg" id="otherVideo" autoplay muted playsinline></video>
+      </div>
+      <div>
+        <h3>您的影像</h3>
+        <video poster="../assets/picture/posterImage.jpg" id="myVideo" autoplay muted playsinline></video>
+      </div>
     </div>
-    <div>
-      <h3>您的影像</h3>
-      <video poster="../assets/picture/posterImage.jpg" id="myVideo" autoplay muted playsinline></video>
-    </div>
-  </div>
+  </main>
   <div class="mTop-8">
+    <h2>即時文字</h2>
     <textarea cols="30" rows="10" @input="handleTextareaInput" v-model="state.textAreaValue"></textarea>
   </div>
 </template>
@@ -63,7 +75,7 @@
 import { Peer } from "peerjs";
 import { reactive,ref} from 'vue'
 
-const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string,isError: boolean,isMutedDisable: boolean,myMediaStream: MediaStream | null, isShowCamera: boolean, isShowSound: boolean} = reactive({
+const state:{isconnect: boolean,inputConnectID: string,textAreaValue: string,isError: boolean,isMutedDisable: boolean,myMediaStream: MediaStream | null, isShowCamera: boolean, isShowSound: boolean} = ref({
   isconnect: false,
   inputConnectID: '',
   textAreaValue: '',
