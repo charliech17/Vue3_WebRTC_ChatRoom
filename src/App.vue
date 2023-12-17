@@ -13,11 +13,15 @@
     </div>
     <div class="d-flex align-items-center">
       <h2 class="mr-8 width-180px flex-shrink-0 txt-align pl-8">你的連接碼:</h2>
-      <p class="flex-1"> {{ peerId }}</p>
+      <div class="flex-1 d-flex mr-4 align-items-center justify-content-center" > 
+        <div v-if="!peerId" class="text-center">取得連接碼中...</div>
+        <div v-if="peerId" class="mobile-flex-1">{{ peerId }}</div>
+        <div v-if="peerId" class="copy_img_style" @click="copyText"></div>
+      </div>
     </div>
   </div>
   <div class="d-flex mt-20 justify-content-center align-items-center">
-    <h4 class="mr-8">輸入連接碼</h4>
+    <h4 class="mr-8">輸入別人的連接碼</h4>
     <input 
       class="ipt_style mr-8" 
       type="text" 
@@ -28,7 +32,10 @@
       <span>連接</span>
     </button>
   </div>
-  <main class="main_bg">
+  <main 
+    class="main_bg opacity_disable"
+    :class="{'opacity_normal': state.isconnect}"
+  >
     <h2>視訊介面</h2>
     <div class="control_part mTop-8">
         <!-- **音訊開關按鈕** -->
@@ -66,9 +73,18 @@
       </div>
     </div>
   </main>
-  <div class="mTop-8">
+  <div 
+    class="mTop-8 opacity_disable" 
+    :class="{'opacity_normal': state.isconnect}"
+  >
     <h2>即時文字</h2>
-    <textarea cols="30" rows="10" @input="handleTextareaInput" v-model="state.textAreaValue"></textarea>
+    <textarea 
+      :disabled="!state.isconnect"
+      cols="30" 
+      rows="10" 
+      @input="handleTextareaInput" 
+      v-model="state.textAreaValue"
+    ></textarea>
   </div>
 </template>
 
@@ -106,6 +122,10 @@ initEventListenr()
 // 2 始連接
 const connFunction = (remoteID: string) => {
   console.log(state.inputConnectID,peer)
+  if(state.inputConnectID == peerId.value) {
+    alert("請勿輸入自己的連接碼")
+    return
+  } 
   const conn = peer.connect(remoteID)
   conn.on("open", () => {
     state.isconnect = true
@@ -292,6 +312,26 @@ function getImageUrl(imageName: string) {
   return new URL(`../assets/image/${imageName}`, import.meta.url).href
 }
 
+function copyText() {
+  const text = peerId.value
+  // 判斷瀏覽器支援
+  if (!navigator.clipboard) {
+      alert("瀏覽器不支援 Clipboard API")
+      // 這裡可以改用 document.execCommand('copy') 的方法
+  }
+
+  // 非同步複製至剪貼簿
+  let resolve = () => { 
+      console.log('已複製連接碼'); 
+      alert('已複製連接碼')
+  }
+  let reject = (err: Error) => { 
+      console.error('複製失敗' + err.toString() ); 
+      alert('複製失敗')
+  }
+  navigator.clipboard.writeText(text).then(resolve, reject);
+}
+
 </script>
 
 <style>
@@ -305,6 +345,9 @@ function getImageUrl(imageName: string) {
 <style lang="scss" scoped>
 .mTop-8 {
   margin-top: 16px;
+}
+.mr-4 {
+  margin-right: 8px;
 }
 .logo {
   height: 6em;
@@ -332,5 +375,27 @@ function getImageUrl(imageName: string) {
       width: 100%;
     }
   }
+}
+.opacity_disable {
+  opacity: 0.3;
+}
+.opacity_normal {
+  opacity: 1;
+}
+
+.mobile-flex-1{
+  flex: 1;
+  @media(min-width: 768px) {
+    flex: auto;
+  }
+}
+
+.copy_img_style{
+  height: 20px;
+  width: 20px;
+  cursor: pointer;
+  background-image: url("/copy.png");
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 </style>
